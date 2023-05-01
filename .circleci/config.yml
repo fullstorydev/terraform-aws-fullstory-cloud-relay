@@ -35,7 +35,7 @@ jobs:
     executor: python
     steps:
       - checkout
-      - gh/install
+      - gh/setup
       - run:
           command: |
             if [ -z "${CIRCLE_PULL_REQUEST}" ]; then
