@@ -58,7 +58,7 @@ jobs:
 workflows:
   pr_test:
     jobs:
-      - terraform-check
+      - terraform_check
       - msg_check
   backend-test:
     when: 
