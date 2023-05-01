@@ -6,11 +6,11 @@ executors:
       - image: gcr.io/fs-ops/tfchecker
   node:
     docker:
-      - image: cimg/node:latest
+      - image: cimg/node:current
 
   python:
     docker:
-      - image: cimg/python:latest
+      - image: cimg/python:current
 orbs:
   gh: circleci/github-cli@2.0
 
@@ -39,7 +39,7 @@ jobs:
       - gh/install
       - run_shell:
         command: |
-          if [ -z "${CIRCLE_PULL_REQUES}" ]; then
+          if [ -z "${CIRCLE_PULL_REQUEST}" ]; then
             MSG=`git log -n 1 --pretty=%s`
           else
             MSG=`gh pr view ${CIRCLE_PULL_REQUEST##*/} | head -n 1` 
