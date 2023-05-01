@@ -10,7 +10,8 @@ executors:
 
   python:
     docker:
-      - image: cimg/python:current
+      - image: cimg/python:3.11.3
+
 orbs:
   gh: circleci/github-cli@2.0
 
@@ -21,9 +22,7 @@ jobs:
     executor: terraform
     steps:
       - checkout
-      - setup_remote_docker:
-        docker_layer_caching: true
-      - run_shell:
+      - run:
           step_name: Run Terraform Validate
           command: |
             terraform init -backend=false
@@ -37,22 +36,22 @@ jobs:
     steps:
       - checkout
       - gh/install
-      - run_shell:
-        command: |
-          if [ -z "${CIRCLE_PULL_REQUEST}" ]; then
-            MSG=`git log -n 1 --pretty=%s`
-          else
-            MSG=`gh pr view ${CIRCLE_PULL_REQUEST##*/} | head -n 1` 
-          fi
-          hooks/commit-msg.py $MSG
+      - run:
+          command: |
+            if [ -z "${CIRCLE_PULL_REQUEST}" ]; then
+              MSG=`git log -n 1 --pretty=%s`
+            else
+              MSG=`gh pr view ${CIRCLE_PULL_REQUEST##*/} | head -n 1` 
+            fi
+            hooks/commit-msg.py $MSG
 
   release:
     executor: node
     steps:
         - checkout
-        - run_shell:
-          step_name: Semantic Release
-          command: npx semantic-release
+        - run:
+            step_name: Semantic Release
+            command: npx semantic-release
 
 
 workflows:
