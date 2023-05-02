@@ -1,1 +1,2 @@
-./** @fullstorydev/terraform-cloud-relay-admin
+/CODEOWNERS @fullstorydev/terraform-cloud-relay-admin
+./** @fullstorydev/terraform-cloud-relay-pr-approvers
