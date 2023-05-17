@@ -1,0 +1,63 @@
+formatter: "markdown"
+output:
+  file: README.md
+  mode: inject
+  template: |-
+    <!-- BEGIN_TF_DOCS -->
+    {{ .Content }}
+    <!-- END_TF_DOCS -->
+content: |-
+  {{ .Requirements }}
+  
+  {{ .Inputs }}
+  
+  {{ .Outputs }}
+  
+  ## Usage
+  
+  ### With Route 53 Record Creation
+  
+  This module will automatically create the DNS records if a value for `route53_zone_name` is provided in reference to an existing Route 53 zone within hte same AWS account.
+
+  ```hcl
+  {{ include "examples/route_53/main.tf" }}
+  ```
+  
+  > :warning: **Note:** CloudFront Distributions can take 10-15 minutes to become active after creation.
+  
+  ### Without Route 53 Record Creation
+  
+  By default, the module will not create a DNS record in Route 53. An example of which is below.
+  
+  ```hcl
+  {{ include "examples/without_route_53/main.tf" }}
+  ```
+  
+  Once the resources have been successfully created, the CNAME of the CloudFront distribution and the DNS validation record information can be extracted from the Terraform state using the command below.
+  
+  ```bash
+  terraform output relay_ip_address
+  ```
+  
+  If the above command does not work, ensure that the two `output` blocks are present as shown in the example above.
+  
+  Next, create a `CNAME` DNS record that routes the `relay_fqdn` to the `relay_distribution_domain_name` found in the previous command.
+  
+  Finally, create a DNS validation `CNAME` record that routes the `relay_cert_dns_validation.<relay_fqdn>.name` to the `relay_cert_dns_validation.<relay_fqdn>.record` value.
+  
+  Once the DNS record has been created, the SSL certificate can take up to 15 minutes to become active. The status can be checked using the command below.
+  
+  ```bash
+  aws acm list-certificates
+  ```
+  
+  ### European Realm Target
+  
+  ```hcl
+  {{ include "examples/europe/main.tf" }}
+  ```
+  
+  ### Validation
+  Once an instance of the FullStory Relay has been successfully created, the health endpoint at `https://<relay_fqdn>/healthz` should return a `200 OK`.
+  
+  {{ .Resources }}
