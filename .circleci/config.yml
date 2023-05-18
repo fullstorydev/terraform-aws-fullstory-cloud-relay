@@ -57,6 +57,7 @@ jobs:
             command: |
               eval $(ssh-agent -s)
               echo $DEPLOY_KEY | base64 -d > /tmp/deploy_key
+              chmod 600 /tmp/deploy_key
               ssh-add /tmp/deploy_key </dev/null
               echo npx semantic-release
 
