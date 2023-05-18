@@ -3,7 +3,7 @@ version: 2.1
 executors:
   terraform:
     docker:
-      - image: gcr.io/fs-ops/tfchecker
+      - image: cimg/deploy:2023.05
   node:
     docker:
       - image: cimg/node:current
@@ -11,10 +11,6 @@ executors:
   python:
     docker:
       - image: cimg/python:3.11.3
-
-orbs:
-  gh: circleci/github-cli@2.0
-
   
 
 jobs:
@@ -35,14 +31,18 @@ jobs:
     executor: python
     steps:
       - checkout
-      - gh/setup
       - run:
           command: |
-            if [ -z "${CIRCLE_PULL_REQUEST}" ]; then
+            if [ -z "${CIRCLE_PR_NUMBER}" ]; then
               MSG=`git log -n 1 --pretty=%s`
             else
-              MSG=`gh pr view ${CIRCLE_PULL_REQUEST##*/} | head -n 1` 
+              MSG=`curl -s https://api.github.com/repos/${CIRCLE_PR_REPONAME}/pulls/${CIRCLE_PR_NUMBER}|jq .title`
+              MSG=${${MSG%%\"}##\"}
+              if [ -z "$MSG" ]; then
+                MSG=`git log -n 1 --pretty=%s`
+              fi
             fi
+            
             hooks/commit-msg.py $MSG
 
   release:
