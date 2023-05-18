@@ -34,16 +34,16 @@ jobs:
       - run:
           command: |
             if [ -z "${CIRCLE_PR_NUMBER}" ]; then
-              MSG=`git log -n 1 --pretty=%s`
+              MSG="`git log -n 1 --pretty=%s`"
             else
-              MSG=`curl -s https://api.github.com/repos/${CIRCLE_PR_REPONAME}/pulls/${CIRCLE_PR_NUMBER}|jq .title`
-              MSG=${${MSG%%\"}##\"}
+              MSG="`curl -s https://api.github.com/repos/${CIRCLE_PR_REPONAME}/pulls/${CIRCLE_PR_NUMBER}|jq .title`"
+              MSG="${${MSG%%\"}##\"}"
               if [ -z "$MSG" ]; then
-                MSG=`git log -n 1 --pretty=%s`
+                MSG="`git log -n 1 --pretty=%s`"
               fi
             fi
-            
-            hooks/commit-msg.py $MSG
+            echo Message:$MSG
+            hooks/commit-msg.py "$MSG"
 
   release:
     executor: node
