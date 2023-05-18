@@ -42,10 +42,7 @@ jobs:
                 MSG="`git log -n 1 --pretty=%s`"
               fi
             fi
-            echo Message:$MSG
-            echo PR REPO: $CIRCLE_PR_REPONAME
-            echo PR Number: $CIRCLE_PR_NUMBER
-            echo PR URL: $CIRCLE_PULL_REQUEST
+            
             hooks/commit-msg.py "$MSG"
 
   release:
@@ -68,34 +65,10 @@ workflows:
       - terraform_check
       - msg_check
   backend-test:
-    #when: 
-      # condition:
-      #   equal: [ main, << pipeline.git.branch >> ]
+    when: 
+      condition:
+        equal: [ main, << pipeline.git.branch >> ]
     jobs:
       - release
-
-  # create-a-deployment: #move this into the first step
-  #   docker:
-  #     - image: cimg/base:stable
-  #   steps:
-      
-  #     - run:
-  #         command: >
-  #           gh api /repos/:owner/:repo/deployments --preview ant-man --input - \
-
-  #           --jq '"export GH_DEPLOYMENT_STATUS_URL=\(.statuses_url)"' >>
-  #           $BASH_ENV \<<JSON || true
-
-  #           {
-
-  #           "ref": "${CIRCLE_TAG:-$CIRCLE_SHA1}",
-
-  #           "environment": "${AWS_ENVIRONMENT,,}",
-
-  #           "auto_merge": false,
-
-  #           "required_contexts": []
-
-  #           }
 
   
