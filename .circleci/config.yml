@@ -43,7 +43,9 @@ jobs:
               fi
             fi
             echo Message:$MSG
-            echo PR REPO:$CIRCLE_PR_REPONAME
+            echo PR REPO: $CIRCLE_PR_REPONAME
+            echo PR Number: $CIRCLE_PR_NUMBER
+            echo PR URL: $CIRCLE_PULL_REQUEST
             hooks/commit-msg.py "$MSG"
 
   release:
@@ -52,7 +54,11 @@ jobs:
         - checkout
         - run:
             step_name: Semantic Release
-            command: npx semantic-release
+            command: |
+            eval $(ssh-agent -s)
+            echo $DEPLOY_KEY | base64 -d > /tmp/deploy_key
+            ssh-add /tmp/deploy_key </dev/null
+            echo npx semantic-release
 
 
 workflows:
@@ -61,9 +67,9 @@ workflows:
       - terraform_check
       - msg_check
   backend-test:
-    when: 
-      condition:
-        equal: [ main, << pipeline.git.branch >> ]
+    #when: 
+      # condition:
+      #   equal: [ main, << pipeline.git.branch >> ]
     jobs:
       - release
 
