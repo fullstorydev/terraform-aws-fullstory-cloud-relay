@@ -27,29 +27,40 @@ content: |-
   
   ### Without Route 53 Record Creation
   
-  By default, the module will not create a DNS record in Route 53. An example of which is below.
+  By default, the module will not create a DNS record in Route 53 or certificate in ACM.
+  
+  A certificate must be created and validated before the relay can be created. This can be done manually or via Terraform (example below).
+  
+  ```hcl
+  {{ include "examples/without_route_53/cert.tf" }}
+  ```
+  
+  Once the certificate is created, it must be validated before it can be used. The DNS validation information can be extracted from the Terraform state using the command below.
+  
+  ```bash
+  terraform output relay_cert_dns_validation
+  ```
+  
+  Create a DNS validation `CNAME` record that routes the `relay_cert_dns_validation.<relay_fqdn>.name` to the `relay_cert_dns_validation.<relay_fqdn>.record` value.
+  Once the DNS record has been created, the certificate can take up to 15 minutes to become active. The status can be checked using the command below.
+  
+  ```bash
+  aws acm list-certificates --query "CertificateSummaryList[?DomainName=='<relay_fqdn>'].Status" 
+  ```
+  
+  Now that the certificate has been created and is active, the ARN can be passed into the module as seen below.
   
   ```hcl
   {{ include "examples/without_route_53/main.tf" }}
   ```
   
-  Once the resources have been successfully created, the CNAME of the CloudFront distribution and the DNS validation record information can be extracted from the Terraform state using the command below.
+  Once the resources have been successfully created, the final step is to create the CNAME of the CloudFront distribution which can be extracted from the Terraform state using the command below.
   
   ```bash
-  terraform output relay_ip_address
+  terraform output relay_distribution_domain_name
   ```
   
-  If the above command does not work, ensure that the two `output` blocks are present as shown in the example above.
-  
-  Next, create a `CNAME` DNS record that routes the `relay_fqdn` to the `relay_distribution_domain_name` found in the previous command.
-  
-  Finally, create a DNS validation `CNAME` record that routes the `relay_cert_dns_validation.<relay_fqdn>.name` to the `relay_cert_dns_validation.<relay_fqdn>.record` value.
-  
-  Once the DNS record has been created, the SSL certificate can take up to 15 minutes to become active. The status can be checked using the command below.
-  
-  ```bash
-  aws acm list-certificates
-  ```
+  Create a `CNAME` DNS record that routes the `relay_fqdn` to the `relay_distribution_domain_name` found in the previous command.
   
   ### European Realm Target
   

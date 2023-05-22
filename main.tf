@@ -1,7 +1,7 @@
 locals {
-  version           = "0.1.0" #TODO: Dynamically inject?
-  create_dns_record = tobool(var.route53_zone_name != null)
-  endpoints         = {
+  version                    = "0.1.0" #TODO: Dynamically inject?
+  create_dns_record_and_cert = tobool(var.route53_zone_name != null)
+  endpoints                  = {
     edge : "edge.${var.target_fqdn}",
     rs : "rs.${var.target_fqdn}",
     services : "services.fullstory.com"
@@ -24,13 +24,20 @@ data "aws_cloudfront_response_headers_policy" "cors" {
 }
 
 data "aws_route53_zone" "fullstory_relay" {
-  count = local.create_dns_record ? 1 : 0
+  count = local.create_dns_record_and_cert ? 1 : 0
   name  = var.route53_zone_name
+}
+
+data "aws_arn" "fullstory_relay" {
+  # Used to validate a user-supplied ARN before usage in the CloudFront distribution
+  count = local.create_dns_record_and_cert ? 0 : 1
+  arn   = var.acm_certificate_arn
 }
 
 ######## Certificate Resources ########
 
 resource "aws_acm_certificate" "fullstory_relay" {
+  count             = local.create_dns_record_and_cert ? 1 : 0
   domain_name       = var.relay_fqdn
   validation_method = "DNS"
 
@@ -40,8 +47,8 @@ resource "aws_acm_certificate" "fullstory_relay" {
 }
 
 resource "aws_route53_record" "fullstory_relay_dns_validation" {
-  for_each = local.create_dns_record ? {
-    for dvo in aws_acm_certificate.fullstory_relay.domain_validation_options : dvo.domain_name => {
+  for_each = local.create_dns_record_and_cert ? {
+    for dvo in aws_acm_certificate.fullstory_relay[0].domain_validation_options : dvo.domain_name => {
       name   = dvo.resource_record_name
       record = dvo.resource_record_value
       type   = dvo.resource_record_type
@@ -57,8 +64,8 @@ resource "aws_route53_record" "fullstory_relay_dns_validation" {
 }
 
 resource "aws_acm_certificate_validation" "fullstory_relay" {
-  count                   = local.create_dns_record ? 1 : 0
-  certificate_arn         = aws_acm_certificate.fullstory_relay.arn
+  count                   = local.create_dns_record_and_cert ? 1 : 0
+  certificate_arn         = aws_acm_certificate.fullstory_relay[0].arn
   validation_record_fqdns = [for record in aws_route53_record.fullstory_relay_dns_validation : record.fqdn]
 }
 
@@ -117,7 +124,7 @@ resource "aws_cloudfront_distribution" "fullstory_relay" {
   }
 
   default_cache_behavior {
-    allowed_methods            = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    allowed_methods            = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
     cached_methods             = ["GET", "HEAD"]
     cache_policy_id            = data.aws_cloudfront_cache_policy.caching_disabled.id
     origin_request_policy_id   = aws_cloudfront_origin_request_policy.fullstory_relay.id
@@ -129,8 +136,8 @@ resource "aws_cloudfront_distribution" "fullstory_relay" {
   # Cache behavior with precedence 0
   ordered_cache_behavior {
     path_pattern               = "/s/fs.js"
-    allowed_methods            = ["GET", "HEAD", "OPTIONS"]
-    cached_methods             = ["GET", "HEAD", "OPTIONS"]
+    allowed_methods            = ["GET", "HEAD"]
+    cached_methods             = ["GET", "HEAD"]
     cache_policy_id            = data.aws_cloudfront_cache_policy.caching_optimized.id
     origin_request_policy_id   = aws_cloudfront_origin_request_policy.fullstory_relay.id
     response_headers_policy_id = data.aws_cloudfront_response_headers_policy.cors.id
@@ -141,25 +148,23 @@ resource "aws_cloudfront_distribution" "fullstory_relay" {
 
   ordered_cache_behavior {
     path_pattern               = "/rec/bundle"
-    allowed_methods            = ["GET", "HEAD", "OPTIONS"]
-    cached_methods             = ["GET", "HEAD", "OPTIONS"]
+    allowed_methods            = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
+    cached_methods             = ["GET", "HEAD"]
     cache_policy_id            = data.aws_cloudfront_cache_policy.caching_disabled.id
     origin_request_policy_id   = aws_cloudfront_origin_request_policy.fullstory_relay.id
     response_headers_policy_id = data.aws_cloudfront_response_headers_policy.cors.id
     target_origin_id           = "rs"
-    compress                   = true
     viewer_protocol_policy     = "redirect-to-https"
   }
 
   ordered_cache_behavior {
     path_pattern               = "/echo"
-    allowed_methods            = ["GET", "HEAD", "OPTIONS"]
-    cached_methods             = ["GET", "HEAD", "OPTIONS"]
+    allowed_methods            = ["GET", "HEAD"]
+    cached_methods             = ["GET", "HEAD"]
     cache_policy_id            = data.aws_cloudfront_cache_policy.caching_disabled.id
     origin_request_policy_id   = aws_cloudfront_origin_request_policy.fullstory_relay.id
     response_headers_policy_id = data.aws_cloudfront_response_headers_policy.cors.id
     target_origin_id           = "services"
-    compress                   = true
     viewer_protocol_policy     = "redirect-to-https"
   }
 
@@ -172,7 +177,7 @@ resource "aws_cloudfront_distribution" "fullstory_relay" {
   }
 
   viewer_certificate {
-    acm_certificate_arn      = aws_acm_certificate.fullstory_relay.arn
+    acm_certificate_arn      = local.create_dns_record_and_cert ? aws_acm_certificate.fullstory_relay[0].arn : data.aws_arn.fullstory_relay[0].arn
     ssl_support_method       = "sni-only"
     minimum_protocol_version = "TLSv1.2_2021"
   }
@@ -181,7 +186,7 @@ resource "aws_cloudfront_distribution" "fullstory_relay" {
 ######## Route53 Resources ########
 
 resource "aws_route53_record" "fullstory_relay" {
-  count = local.create_dns_record ? 1 : 0
+  count = local.create_dns_record_and_cert ? 1 : 0
 
   zone_id = data.aws_route53_zone.fullstory_relay[0].zone_id
   name    = var.relay_fqdn
