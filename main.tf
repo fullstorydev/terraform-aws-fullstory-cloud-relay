@@ -1,5 +1,7 @@
 locals {
-  version                    = "0.1.0" #TODO: Dynamically inject?
+  module_name = "fullstory-cloud-relay/aws"
+
+  version           = try(compact([for m in jsondecode(file("${path.module}/../modules.json"))["Modules"] : length(regexall(".${local.module_name}.*", m["Source"])) > 0 ? m["Version"] : ""])[0], "unreleased")
   create_dns_record_and_cert = tobool(var.route53_zone_name != null)
   endpoints                  = {
     edge : "edge.${var.target_fqdn}",
