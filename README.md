@@ -21,15 +21,15 @@ script configuration can be found in this KB article (TODO: add link).
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_acm_certificate_arn"></a> [acm\_certificate\_arn](#input\_acm\_certificate\_arn) | (optional) The ARN of the ACM certificate to be used for the relay. If omitted, a value for `route53_zone_name` must be provided. Defaults to null. | `string` | `null` | no |
 | <a name="input_relay_fqdn"></a> [relay\_fqdn](#input\_relay\_fqdn) | The fully qualified domain name for the relay. Example: `fsrelay.your-company.com`. | `string` | n/a | yes |
-| <a name="input_route53_zone_name"></a> [route53\_zone\_name](#input\_route53\_zone\_name) | (optional) The Route 53 zone name for placing the DNS CNAME record. Defaults to null. | `string` | `null` | no |
+| <a name="input_route53_zone_name"></a> [route53\_zone\_name](#input\_route53\_zone\_name) | (optional) The Route 53 zone name for placing the DNS CNAME record. If omitted, a value for `acm_certificate_arn` must be provided. Defaults to null. | `string` | `null` | no |
 | <a name="input_target_fqdn"></a> [target\_fqdn](#input\_target\_fqdn) | (optional) The fully qualified domain name that the relay targets. Defaults to `fullstory.com`. | `string` | `"fullstory.com"` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| <a name="output_relay_cert_dns_validation"></a> [relay\_cert\_dns\_validation](#output\_relay\_cert\_dns\_validation) | The information required to create a DNS validation record. |
 | <a name="output_relay_distribution_domain_name"></a> [relay\_distribution\_domain\_name](#output\_relay\_distribution\_domain\_name) | The domain name of the relay CloudFront distribution. |
 
 ## Usage
@@ -50,40 +50,62 @@ module "fullstory_relay" {
 
 ### Without Route 53 Record Creation
 
-By default, the module will not create a DNS record in Route 53. An example of which is below.
+By default, the module will not create a DNS record in Route 53 or certificate in ACM.
+
+A certificate must be created and validated before the relay can be created. This can be done manually or via Terraform (example below).
+
+```hcl
+resource "aws_acm_certificate" "fullstory_relay" {
+  domain_name       = "fsrelay.your-company.com"
+  validation_method = "DNS"
+}
+
+output "relay_cert_dns_validation" {
+  description = "The information required to create a DNS validation record."
+  value       = {
+    for dvo in aws_acm_certificate.fullstory_relay.domain_validation_options : dvo.domain_name => {
+      name   = dvo.resource_record_name
+      record = dvo.resource_record_value
+      type   = dvo.resource_record_type
+    }
+  }
+}
+```
+
+Once the certificate is created, it must be validated before it can be used. The DNS validation information can be extracted from the Terraform state using the command below.
+
+```bash
+terraform output relay_cert_dns_validation
+```
+
+Create a DNS validation `CNAME` record that routes the `relay_cert_dns_validation.<relay_fqdn>.name` to the `relay_cert_dns_validation.<relay_fqdn>.record` value.
+Once the DNS record has been created, the certificate can take up to 15 minutes to become active. The status can be checked using the command below.
+
+```bash
+aws acm list-certificates --query "CertificateSummaryList[?DomainName=='<relay_fqdn>'].Status"
+```
+
+Now that the certificate has been created and is active, the ARN can be passed into the module as seen below.
 
 ```hcl
 module "fullstory_relay" {
-  source     = "fullstorydev/fullstory-cloud-relay/aws"
-  relay_fqdn = "fsrelay.your-company.com"
+  source              = "fullstorydev/fullstory-cloud-relay/aws"
+  relay_fqdn          = "fsrelay.your-company.com"
+  acm_certificate_arn = aws_acm_certificate.fullstory_relay.arn
 }
 
 output "relay_distribution_domain_name" {
   value = module.fullstory_relay.relay_distribution_domain_name
 }
-
-output "relay_cert_dns_validation" {
-  value = module.fullstory_relay.relay_cert_dns_validation
-}
 ```
 
-Once the resources have been successfully created, the CNAME of the CloudFront distribution and the DNS validation record information can be extracted from the Terraform state using the command below.
+Once the resources have been successfully created, the final step is to create the CNAME of the CloudFront distribution which can be extracted from the Terraform state using the command below.
 
 ```bash
-terraform output relay_ip_address
+terraform output relay_distribution_domain_name
 ```
 
-If the above command does not work, ensure that the two `output` blocks are present as shown in the example above.
-
-Next, create a `CNAME` DNS record that routes the `relay_fqdn` to the `relay_distribution_domain_name` found in the previous command.
-
-Finally, create a DNS validation `CNAME` record that routes the `relay_cert_dns_validation.<relay_fqdn>.name` to the `relay_cert_dns_validation.<relay_fqdn>.record` value.
-
-Once the DNS record has been created, the SSL certificate can take up to 15 minutes to become active. The status can be checked using the command below.
-
-```bash
-aws acm list-certificates
-```
+Create a `CNAME` DNS record that routes the `relay_fqdn` to the `relay_distribution_domain_name` found in the previous command.
 
 ### European Realm Target
 
@@ -108,6 +130,7 @@ Once an instance of the FullStory Relay has been successfully created, the healt
 | [aws_cloudfront_origin_request_policy.fullstory_relay](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_origin_request_policy) | resource |
 | [aws_route53_record.fullstory_relay](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
 | [aws_route53_record.fullstory_relay_dns_validation](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
+| [aws_arn.fullstory_relay](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/arn) | data source |
 | [aws_cloudfront_cache_policy.caching_disabled](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/cloudfront_cache_policy) | data source |
 | [aws_cloudfront_cache_policy.caching_optimized](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/cloudfront_cache_policy) | data source |
 | [aws_cloudfront_response_headers_policy.cors](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/cloudfront_response_headers_policy) | data source |
