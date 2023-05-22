@@ -1,7 +1,7 @@
 locals {
   name = "fullstory-cloud-relay/aws"
 
-  version           = compact([for m in jsondecode(file("${path.module}/../modules.json"))["Modules"] : length(regexall(".${local.name}.*", m["Source"])) > 0 ? m["Version"] : ""])[0]
+  version           = try(compact([for m in jsondecode(file("${path.module}/../modules.json"))["Modules"] : length(regexall(".${local.name}.*", m["Source"])) > 0 ? m["Version"] : ""])[0], "unreleased")
   create_dns_record = tobool(var.route53_zone_name != null)
   endpoints = {
     edge : "edge.${var.target_fqdn}",
