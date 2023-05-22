@@ -1,7 +1,9 @@
 locals {
-  version           = "0.1.0" #TODO: Dynamically inject?
+  version = compact([for m in jsondecode(file("${path.module}/../modules.json"))["Modules"] : length(regexall(".*fullstory-cloud-relay.*", m["Source"])) > 0 ? m["Version"] : ""])[0]
+
+
   create_dns_record = tobool(var.route53_zone_name != null)
-  endpoints         = {
+  endpoints = {
     edge : "edge.${var.target_fqdn}",
     rs : "rs.${var.target_fqdn}",
     services : "services.fullstory.com"
