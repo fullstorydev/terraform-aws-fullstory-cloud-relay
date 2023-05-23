@@ -7,7 +7,7 @@
 
 This module creates a relay that allows you to route all captured FullStory traffic
 from your users’ browser directly through your own domain. More information on the philosophy and 
-script configuration can be found in this KB article (TODO: add link).
+script configuration can be found in [this KB article](https://help.fullstory.com/hc/en-us/articles/360046112593-How-to-send-captured-traffic-to-your-First-Party-Domain-using-FullStory-Relay).
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
