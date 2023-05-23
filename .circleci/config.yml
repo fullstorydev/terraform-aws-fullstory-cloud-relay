@@ -11,6 +11,10 @@ executors:
   python:
     docker:
       - image: cimg/python:3.11.3
+    
+  tf_docs:
+    docker:
+      - image: quay.io/terraform-docs/terraform-docs:0.16.0
   
 
 jobs:
@@ -26,6 +30,20 @@ jobs:
       # - run_shell:
       #     step_name: Generate Terraform Docs
       #   .... <check terraform docs generation> ....
+  
+  terraform_docs:
+    executor: tf_docs
+    steps:
+      - checkout
+      - run:
+          step_name: Verify Terraform Documentation
+          command: |
+            terraform-docs markdown .
+            output="`git status --porcelain`"
+            if [ -n "$output" ]; then
+              echo "Check of generated terraform documentation failed. Please run 'terraform-docs markdown .'"
+            fi
+
 
   msg_check:
     executor: python
@@ -45,7 +63,7 @@ jobs:
             
             hooks/commit-msg.py "$MSG"
 
-  release:
+  version_bump:
     executor: node
     steps:
         - checkout
@@ -64,11 +82,12 @@ workflows:
     jobs:
       - terraform_check
       - msg_check
-  backend-test:
+      - terraform_docs
+  release:
     when: 
       condition:
         equal: [ main, << pipeline.git.branch >> ]
     jobs:
-      - release
+      - version_bump
 
   
