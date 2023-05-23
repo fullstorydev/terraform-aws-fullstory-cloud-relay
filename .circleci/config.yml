@@ -72,7 +72,7 @@ jobs:
               echo $DEPLOY_KEY | base64 -d > /tmp/deploy_key
               chmod 600 /tmp/deploy_key
               ssh-add /tmp/deploy_key </dev/null
-              echo npx semantic-release
+              npx semantic-release
 
 
 workflows:
