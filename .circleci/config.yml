@@ -38,10 +38,12 @@ jobs:
       - run:
           step_name: Verify Terraform Documentation
           command: |
+            mv README.md /tmp
             terraform-docs markdown .
-            output="`git status --porcelain`"
-            if [ -n "$output" ]; then
+            diff /tmp/README.md README.md 
+            if [ $? != 0  ]; then
               echo "Check of generated terraform documentation failed. Please run 'terraform-docs markdown .'"
+              exit 1
             fi
 
 
