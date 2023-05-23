@@ -36,15 +36,11 @@ jobs:
     steps:
       - checkout
       - run:
-          step_name: Verify Terraform Documentation
+          step_name: Verify Terraform Documentation Generation
           command: |
-            mv README.md /tmp
+            cp README.md /tmp
             terraform-docs markdown .
-            diff /tmp/README.md README.md 
-            if [ $? != 0  ]; then
-              echo "Check of generated terraform documentation failed. Please run 'terraform-docs markdown .'"
-              exit 1
-            fi
+            diff /tmp/README.md README.md
 
 
   msg_check:
