@@ -59,5 +59,5 @@ if not passCheck:
     print("=========================================================")
     print(f"{COLORS.FAIL}ERROR: {errMsg}{COLORS.ENDC}")
     print(f"{COLORS.WARNING}Check https://www.conventionalcommits.org/en/v1.0.0/#summary for correct syntax{COLORS.ENDC}")
-    # exit(1)
+    exit(1)
 
