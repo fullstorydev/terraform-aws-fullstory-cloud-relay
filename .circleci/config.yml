@@ -84,5 +84,3 @@ workflows:
         equal: [ main, << pipeline.git.branch >> ]
     jobs:
       - version_bump
-
-  
