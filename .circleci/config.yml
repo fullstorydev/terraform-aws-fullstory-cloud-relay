@@ -27,9 +27,6 @@ jobs:
           command: |
             terraform init -backend=false
             terraform validate
-      # - run_shell:
-      #     step_name: Generate Terraform Docs
-      #   .... <check terraform docs generation> ....
   
   terraform_docs:
     executor: tf_docs
