@@ -79,8 +79,8 @@ workflows:
       - msg_check
       - terraform_docs
   release:
-    # when: 
-    #   condition:
-    #     equal: [ main, << pipeline.git.branch >> ]
+    when: 
+      condition:
+        equal: [ main, << pipeline.git.branch >> ]
     jobs:
       - version_bump
