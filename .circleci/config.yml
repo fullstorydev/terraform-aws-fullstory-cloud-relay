@@ -74,6 +74,9 @@ jobs:
 
 workflows:
   pr_test:
+    when: 
+      condition:
+        not: [ main, << pipeline.git.branch >> ]
     jobs:
       - terraform_check
       - msg_check

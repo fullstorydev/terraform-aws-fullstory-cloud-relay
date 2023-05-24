@@ -2,3 +2,5 @@
 
 echo "Enabling commit check"
 cp ./hooks/commit-msg ./.git/hooks/
+
+test
