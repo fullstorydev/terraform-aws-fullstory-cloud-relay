@@ -74,13 +74,19 @@ jobs:
 
 workflows:
   pr_test:
+    when: 
+      and:
+      - not: 
+          matches:
+            pattern: "^main$"
+            value: << pipeline.git.branch >>
     jobs:
       - terraform_check
       - msg_check
       - terraform_docs
   release:
-    when: 
-      condition:
-        equal: [ main, << pipeline.git.branch >> ]
+    when:
+      and:
+      - equal: [ main, << pipeline.git.branch >> ]
     jobs:
       - version_bump
