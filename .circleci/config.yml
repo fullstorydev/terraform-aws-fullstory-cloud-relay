@@ -75,15 +75,13 @@ jobs:
 workflows:
   pr_test:
     when: 
-      condition:
-        not: [ main, << pipeline.git.branch >> ]
+      not: [ main, << pipeline.git.branch >> ]
     jobs:
       - terraform_check
       - msg_check
       - terraform_docs
   release:
     when: 
-      condition:
-        equal: [ main, << pipeline.git.branch >> ]
+      equal: [ main, << pipeline.git.branch >> ]
     jobs:
       - version_bump
