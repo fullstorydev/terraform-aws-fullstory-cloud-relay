@@ -76,7 +76,10 @@ workflows:
   pr_test:
     when: 
       and:
-      - not: [ main, << pipeline.git.branch >> ]
+      - not: 
+          matches:
+            pattern: "^main$"
+            value: << pipeline.git.branch >>
     jobs:
       - terraform_check
       - msg_check
