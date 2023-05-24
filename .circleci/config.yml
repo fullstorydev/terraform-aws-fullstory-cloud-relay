@@ -69,7 +69,7 @@ jobs:
               echo $DEPLOY_KEY | base64 -d > /tmp/deploy_key
               chmod 600 /tmp/deploy_key
               ssh-add /tmp/deploy_key </dev/null
-              npx semantic-release
+              npx semantic-release --branches main --dry-run
 
 
 workflows:
@@ -79,9 +79,9 @@ workflows:
       - msg_check
       - terraform_docs
   release:
-    when: 
-      condition:
-        equal: [ main, << pipeline.git.branch >> ]
+    # when: 
+    #   condition:
+    #     equal: [ main, << pipeline.git.branch >> ]
     jobs:
       - version_bump
 
