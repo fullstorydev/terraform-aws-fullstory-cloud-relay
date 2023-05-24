@@ -46,17 +46,11 @@ jobs:
       - checkout
       - run:
           command: |
-            if [ -z "${CIRCLE_PR_NUMBER}" ]; then
-              MSG="`git log -n 1 --pretty=%s`"
-            else
-              MSG="`curl -s https://api.github.com/repos/${CIRCLE_PR_REPONAME}/pulls/${CIRCLE_PR_NUMBER}|jq .title`"
-              MSG="${${MSG%%\"}##\"}"
-              if [ -z "$MSG" ]; then
-                MSG="`git log -n 1 --pretty=%s`"
-              fi
-            fi
-            
-            hooks/commit-msg.py "$MSG"
+            IFS=$'\n'
+            for MSG in $(git log --left-right --graph --cherry-pick --oneline main...${CIRCLE_BRANCH} | cut -d " " -f 3-); do 
+              echo "checking commit [${MSG}]"
+              hooks/commit-msg.py "$MSG"
+            done
 
   version_bump:
     executor: node
