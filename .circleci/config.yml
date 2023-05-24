@@ -69,7 +69,7 @@ jobs:
               echo $DEPLOY_KEY | base64 -d > /tmp/deploy_key
               chmod 600 /tmp/deploy_key
               ssh-add /tmp/deploy_key </dev/null
-              npx semantic-release --branches michaelpieper/semantic-release-fix -p "['@semantic-release/commit-analyzer', '@semantic-release/release-notes-generator', '@semantic-release/npm']" --dry-run --no-ci
+              npx semantic-release --branches michaelpieper/semantic-release-fix -p "@semantic-release/commit-analyzer,@semantic-release/release-notes-generator,@semantic-release/npm" --dry-run --no-ci
 
 
 workflows:
