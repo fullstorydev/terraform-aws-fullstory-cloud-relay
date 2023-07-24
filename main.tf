@@ -1,9 +1,9 @@
 locals {
   module_name = "fullstory-cloud-relay/aws"
 
-  version           = try(compact([for m in jsondecode(file("${path.module}/../modules.json"))["Modules"] : length(regexall(".${local.module_name}.*", m["Source"])) > 0 ? m["Version"] : ""])[0], "unreleased")
+  version                    = try(compact([for m in jsondecode(file("${path.module}/../modules.json"))["Modules"] : length(regexall(".${local.module_name}.*", m["Source"])) > 0 ? m["Version"] : ""])[0], "unreleased")
   create_dns_record_and_cert = tobool(var.route53_zone_name != null)
-  endpoints                  = {
+  endpoints = {
     edge : "edge.${var.target_fqdn}",
     rs : "rs.${var.target_fqdn}",
     services : "services.fullstory.com"
@@ -137,7 +137,19 @@ resource "aws_cloudfront_distribution" "fullstory_relay" {
 
   # Cache behavior with precedence 0
   ordered_cache_behavior {
-    path_pattern               = "/s/fs.js"
+    path_pattern               = "/s/*"
+    allowed_methods            = ["GET", "HEAD"]
+    cached_methods             = ["GET", "HEAD"]
+    cache_policy_id            = data.aws_cloudfront_cache_policy.caching_optimized.id
+    origin_request_policy_id   = aws_cloudfront_origin_request_policy.fullstory_relay.id
+    response_headers_policy_id = data.aws_cloudfront_response_headers_policy.cors.id
+    target_origin_id           = "edge"
+    compress                   = true
+    viewer_protocol_policy     = "redirect-to-https"
+  }
+
+  ordered_cache_behavior {
+    path_pattern               = "/datalayer/*"
     allowed_methods            = ["GET", "HEAD"]
     cached_methods             = ["GET", "HEAD"]
     cache_policy_id            = data.aws_cloudfront_cache_policy.caching_optimized.id
