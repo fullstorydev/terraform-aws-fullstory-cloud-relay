@@ -19,12 +19,13 @@ script configuration can be found in [this KB article](https://help.fullstory.co
 
 ## Inputs
 
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
-| <a name="input_acm_certificate_arn"></a> [acm\_certificate\_arn](#input\_acm\_certificate\_arn) | (optional) The ARN of the ACM certificate to be used for the relay. If omitted, a value for `route53_zone_name` must be provided. Defaults to null. | `string` | `null` | no |
-| <a name="input_relay_fqdn"></a> [relay\_fqdn](#input\_relay\_fqdn) | The fully qualified domain name for the relay. Example: `fsrelay.your-company.com`. | `string` | n/a | yes |
-| <a name="input_route53_zone_name"></a> [route53\_zone\_name](#input\_route53\_zone\_name) | (optional) The Route 53 zone name for placing the DNS CNAME record. If omitted, a value for `acm_certificate_arn` must be provided. Defaults to null. | `string` | `null` | no |
-| <a name="input_target_fqdn"></a> [target\_fqdn](#input\_target\_fqdn) | (optional) The fully qualified domain name that the relay targets. Defaults to `fullstory.com`. | `string` | `"fullstory.com"` | no |
+| Name                                                                                                                                                      | Description                                                                                                                                                                                                                                                         | Type | Default | Required |
+|-----------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------|---------|:--------:|
+| <a name="input_acm_certificate_arn"></a> [acm\_certificate\_arn](#input\_acm\_certificate\_arn)                                                           | (optional) The ARN of the ACM certificate to be used for the relay. If omitted, a value for `route53_zone_name` must be provided. Defaults to null.                                                                                                                 | `string` | `null` | no |
+| <a name="input_relay_fqdn"></a> [relay\_fqdn](#input\_relay\_fqdn)                                                                                        | The fully qualified domain name for the relay. Example: `fsrelay.your-company.com`.                                                                                                                                                                                 | `string` | n/a | yes |
+| <a name="input_route53_zone_name"></a> [route53\_zone\_name](#input\_route53\_zone\_name)                                                                 | (optional) The Route 53 zone name for placing the DNS CNAME record. If omitted, a value for `acm_certificate_arn` must be provided. Defaults to null.                                                                                                               | `string` | `null` | no |
+| <a name="input_target_fqdn"></a> [target\_fqdn](#input\_target\_fqdn)                                                                                     | (optional) The fully qualified domain name that the relay targets. Defaults to `fullstory.com`.                                                                                                                                                                     | `string` | `"fullstory.com"` | no |
+| <a name="input_cloudfront_origin_request_policy_name"></a> [cloudfront\_origin\_request\_policy\_name](#input\_cloudfront\_origin\_request\_policy\_name) | (optional) A name to uniquely identify the cloudfront origin request policy for the relay. This is required to deploy multiple relay modules to the same AWS account, as such policies must be uniquely named. Defaults to `fullstory-relay-origin-request-policy`. | `string` | `"fullstory-relay-origin-request-policy"` | no |
 
 ## Outputs
 
@@ -36,7 +37,7 @@ script configuration can be found in [this KB article](https://help.fullstory.co
 
 ### With Route 53 Record Creation
 
-This module will automatically create the DNS records if a value for `route53_zone_name` is provided in reference to an existing Route 53 zone within hte same AWS account.
+This module will automatically create the DNS records if a value for `route53_zone_name` is provided in reference to an existing Route 53 zone within the same AWS account.
 
 ```hcl
 module "fullstory_relay" {
