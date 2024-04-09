@@ -69,6 +69,6 @@ content: |-
   ```
   
   ### Validation
-  Once an instance of the FullStory Relay has been successfully created, the health endpoint at `https://<relay_fqdn>/healthz` should return a `200 OK`.
+  Once an instance of the Fullstory Relay has been successfully created, the health endpoint at `https://<relay_fqdn>/healthz` should return a `200 OK`.
   
   {{ .Resources }}

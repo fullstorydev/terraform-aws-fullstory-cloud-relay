@@ -76,7 +76,7 @@ resource "aws_acm_certificate_validation" "fullstory_relay" {
 resource "aws_cloudfront_origin_request_policy" "fullstory_relay" {
   name    = var.cloudfront_origin_request_policy_name
 
-  comment = "FullStory Relay"
+  comment = "Fullstory Relay"
   headers_config {
     header_behavior = "allExcept"
     headers {
