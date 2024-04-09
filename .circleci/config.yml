@@ -14,7 +14,7 @@ executors:
     
   tf_docs:
     docker:
-      - image: quay.io/terraform-docs/terraform-docs:0.16.0
+      - image: quay.io/terraform-docs/terraform-docs:0.17.0
   
 
 jobs:

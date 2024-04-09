@@ -1,13 +1,14 @@
-<a href="https://fullstory.com"><img src="https://d36ubspakw5kl4.cloudfront.net/fullstory.png" width="600"></a>
+<a href="https://fullstory.com"><img src="https://github.com/fullstorydev/terraform-aws-fullstory-cloud-relay/blob/main/assets/fs-logo.png?raw=true"></a>
+
 
 # terraform-aws-fullstory-cloud-relay
 
 [![GitHub release](https://img.shields.io/github/release/fullstorydev/terraform-aws-fullstory-cloud-relay.svg)](https://github.com/fullstorydev/terraform-aws-fullstory-cloud-relay/releases/)
 
 
-This module creates a relay that allows you to route all captured FullStory traffic
+This module creates a relay that allows you to route all captured Fullstory traffic
 from your users’ browser directly through your own domain. More information on the philosophy and 
-script configuration can be found in [this KB article](https://help.fullstory.com/hc/en-us/articles/360046112593-How-to-send-captured-traffic-to-your-First-Party-Domain-using-FullStory-Relay).
+script configuration can be found in [this KB article](https://help.fullstory.com/hc/en-us/articles/360046112593-How-to-send-captured-traffic-to-your-First-Party-Domain-using-Fullstory-Relay).
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
@@ -19,13 +20,13 @@ script configuration can be found in [this KB article](https://help.fullstory.co
 
 ## Inputs
 
-| Name                                                                                                                                                      | Description                                                                                                                                                                                                                                                         | Type | Default | Required |
-|-----------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------|---------|:--------:|
-| <a name="input_acm_certificate_arn"></a> [acm\_certificate\_arn](#input\_acm\_certificate\_arn)                                                           | (optional) The ARN of the ACM certificate to be used for the relay. If omitted, a value for `route53_zone_name` must be provided. Defaults to null.                                                                                                                 | `string` | `null` | no |
-| <a name="input_relay_fqdn"></a> [relay\_fqdn](#input\_relay\_fqdn)                                                                                        | The fully qualified domain name for the relay. Example: `fsrelay.your-company.com`.                                                                                                                                                                                 | `string` | n/a | yes |
-| <a name="input_route53_zone_name"></a> [route53\_zone\_name](#input\_route53\_zone\_name)                                                                 | (optional) The Route 53 zone name for placing the DNS CNAME record. If omitted, a value for `acm_certificate_arn` must be provided. Defaults to null.                                                                                                               | `string` | `null` | no |
-| <a name="input_target_fqdn"></a> [target\_fqdn](#input\_target\_fqdn)                                                                                     | (optional) The fully qualified domain name that the relay targets. Defaults to `fullstory.com`.                                                                                                                                                                     | `string` | `"fullstory.com"` | no |
-| <a name="input_cloudfront_origin_request_policy_name"></a> [cloudfront\_origin\_request\_policy\_name](#input\_cloudfront\_origin\_request\_policy\_name) | (optional) A name to uniquely identify the cloudfront origin request policy for the relay. This is required to deploy multiple relay modules to the same AWS account, as such policies must be uniquely named. Defaults to `fullstory-relay-origin-request-policy`. | `string` | `"fullstory-relay-origin-request-policy"` | no |
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| <a name="input_acm_certificate_arn"></a> [acm\_certificate\_arn](#input\_acm\_certificate\_arn) | (optional) The ARN of the ACM certificate to be used for the relay. If omitted, a value for `route53_zone_name` must be provided. Defaults to null. | `string` | `null` | no |
+| <a name="input_cloudfront_origin_request_policy_name"></a> [cloudfront\_origin\_request\_policy\_name](#input\_cloudfront\_origin\_request\_policy\_name) | (optional) A name to uniquely identify the cloudfront origin request policy for the relay. This is required to deploy multiple relay modules to the same AWS account, as such policies must be uniquely named. Example: `fullstory-relay-origin-request-policy-production`. | `string` | `"fullstory-relay-origin-request-policy"` | no |
+| <a name="input_relay_fqdn"></a> [relay\_fqdn](#input\_relay\_fqdn) | The fully qualified domain name for the relay. Example: `fsrelay.your-company.com`. | `string` | n/a | yes |
+| <a name="input_route53_zone_name"></a> [route53\_zone\_name](#input\_route53\_zone\_name) | (optional) The Route 53 zone name for placing the DNS CNAME record. If omitted, a value for `acm_certificate_arn` must be provided. Defaults to null. | `string` | `null` | no |
+| <a name="input_target_fqdn"></a> [target\_fqdn](#input\_target\_fqdn) | (optional) The fully qualified domain name that the relay targets. Defaults to `fullstory.com`. | `string` | `"fullstory.com"` | no |
 
 ## Outputs
 
@@ -83,7 +84,7 @@ Create a DNS validation `CNAME` record that routes the `relay_cert_dns_validatio
 Once the DNS record has been created, the certificate can take up to 15 minutes to become active. The status can be checked using the command below.
 
 ```bash
-aws acm list-certificates --query "CertificateSummaryList[?DomainName=='<relay_fqdn>'].Status"
+aws acm list-certificates --query "CertificateSummaryList[?DomainName=='<relay_fqdn>'].Status" 
 ```
 
 Now that the certificate has been created and is active, the ARN can be passed into the module as seen below.
@@ -119,7 +120,7 @@ module "fullstory_relay" {
 ```
 
 ### Validation
-Once an instance of the FullStory Relay has been successfully created, the health endpoint at `https://<relay_fqdn>/healthz` should return a `200 OK`.
+Once an instance of the Fullstory Relay has been successfully created, the health endpoint at `https://<relay_fqdn>/healthz` should return a `200 OK`.
 
 ## Resources
 
