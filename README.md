@@ -38,7 +38,7 @@ script configuration can be found in [this KB article](https://help.fullstory.co
 
 ### With Route 53 Record Creation
 
-This module will automatically create the DNS records if a value for `route53_zone_name` is provided in reference to an existing Route 53 zone within hte same AWS account.
+This module will automatically create the DNS records if a value for `route53_zone_name` is provided in reference to an existing Route 53 zone within the same AWS account.
 
 ```hcl
 module "fullstory_relay" {
